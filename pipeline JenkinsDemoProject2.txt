@@ -1,0 +1,37 @@
+pipeline{
+	agent any
+	stages {
+		stage ("Build") {
+				steps {
+					echo 'Build the program'
+					bat """
+					"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin\\amd64\\MSBuild.exe" "C:\\Jenkins\\JenkinsDemoProject2\\JenkinsDemoProject2.sln" /target:publish
+					"""
+				}
+			} // Build Stage
+		
+		stage ("Testing"){
+				steps{
+					echo 'Run Unit Tests'
+					bat """
+					"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TestWindow\\vstest.console.exe" C:\\Jenkins\\JenkinsDemoProject2\\JenkinsTest\\bin\\Debug\\netcoreapp3.1\\publish\\JenkinsTest.dll /Logger:trx
+					"""
+				}
+			} // Testing Stage
+		} // Main stages tag
+	
+	post {
+        always {
+        step([$class: 'MSTestPublisher', testResultsFile:'**/*.trx', failOnError: true, keepLongStdio: true])
+		cleanWs()
+        }
+        success {
+            echo "Succeed"
+            // TBD
+        }
+        failure {
+            echo "Failed"
+            // TBD
+        }
+	}	
+} // pipeline
